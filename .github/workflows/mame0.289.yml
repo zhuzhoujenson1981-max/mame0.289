@@ -1,0 +1,33 @@
+name: Build MAME iOS Core
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          brew install pkg-config coreutils
+
+      - name: Build MAME Arcade-Only Core for iOS
+        run: |
+          make -f Makefile.libretro \
+            platform=ios-arm64 \
+            SUBTARGET=arcade \
+            -j$(sysctl -n hw.ncpu)
+
+      - name: Upload Core Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mamearcade_libretro_ios
+          path: "*.dylib"
